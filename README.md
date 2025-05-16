@@ -1,11 +1,11 @@
 # Product Analysis Project
 
-Ce projet simule la collecte de données produits, réalise une analyse statistique et un clustering des prix, et génère des graphiques.
+Ce projet collecte de données produits, réalise une analyse statistique et un clustering des prix, et génère des graphiques.
 
 ## Structure du projet
 
 - `scraper/`  
-  Contient le script `scraper_custom.py` pour simuler la récupération de données produits et exporter un fichier CSV.
+  Contient le script `scraper_custom.py` pour la récupération de données produits et exporter un fichier CSV.
 
 - `analysis/`  
   Contient les scripts d’analyse (`stats_custom.py`) pour le nettoyage, les statistiques, le clustering et la visualisation.

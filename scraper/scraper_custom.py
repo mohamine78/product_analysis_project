@@ -1,50 +1,48 @@
-import csv
-import random
-from faker import Faker
+# scraper/scraper_custom.py
+
 import os
+import csv
+from serpapi import GoogleSearch
+from dotenv import load_dotenv
 
-class Product:
-    def __init__(self, title, price, source):
-        self.title = title
-        self.price = price
-        self.source = source
-
-    def to_dict(self):
-        return {"title": self.title, "price": self.price, "source": self.source}
-
+load_dotenv()
+API_KEY = os.getenv("SERPAPI_KEY")
 
 class ProductScraper:
-    def __init__(self):
-        self.fake = Faker()
-        self.products = []
+    def __init__(self, query="jeux de console", output_path="data/custom_products.csv"):
+        self.query = query
+        self.output_path = output_path
 
-    def simulate_scraping(self, n=250):
-        game_titles = [
-            "The Legend of Zelda", "FIFA 24", "Call of Duty", "Minecraft", "Elden Ring",
-            "Hogwarts Legacy", "Fortnite", "Animal Crossing", "Mario Kart", "Assassin’s Creed",
-            "Cyberpunk 2077", "Baldur's Gate 3", "GTA V", "Starfield", "Red Dead Redemption 2"
-        ]
+    def scrape_with_serpapi(self):
+        if not API_KEY:
+            raise ValueError("Clé API SerpAPI manquante")
 
-        for _ in range(n):
-            title = random.choice(game_titles) + " - " + self.fake.word().capitalize()
-            price = round(random.uniform(10.0, 80.0), 2)
-            source = "Google Shopping"
-            product = Product(title, price, source)
-            self.products.append(product)
+        params = {
+            "engine": "google_shopping",
+            "q": self.query,
+            "hl": "fr",
+            "gl": "fr",
+            "api_key": API_KEY
+        }
 
-    def export_to_csv(self, filename="data/custom_products.csv"):
-        # Créer dossier data si pas deja le cas
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        search = GoogleSearch(params)
+        results = search.get_dict()
+        products = results.get("shopping_results", [])
 
-        with open(filename, mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.DictWriter(file, fieldnames=["title", "price", "source"])
+        os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
+
+        with open(self.output_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["title", "price", "source"])
             writer.writeheader()
-            for product in self.products:
-                writer.writerow(product.to_dict())
+            for product in products:
+                title = product.get("title")
+                price = product.get("price")
+                source = product.get("source", "Google Shopping")
+                if title and price:
+                    writer.writerow({
+                        "title": title,
+                        "price": price.replace("€", "").replace(",", "."),
+                        "source": source
+                    })
 
-
-if __name__ == "__main__":
-    scraper = ProductScraper()
-    scraper.simulate_scraping(n=250)
-    scraper.export_to_csv("data/custom_products.csv")
-    print("✅ 250 produits simulés exportés dans data/custom_products.csv")
+        print(f"✅ {len(products)} produits enregistrés dans {self.output_path}")

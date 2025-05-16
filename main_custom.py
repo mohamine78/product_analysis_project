@@ -1,17 +1,15 @@
+# main_custom.py
+
 from scraper.scraper_custom import ProductScraper
 from analysis import stats_custom as sc
 
 if __name__ == "__main__":
-    csv_path = "data/custom_products.csv"
-
-    # 1. Simuler le scraping et exporter CSV dans data/
-    scraper = ProductScraper()
-    scraper.simulate_scraping(n=250)
-    scraper.export_to_csv(csv_path)
-    print(f"✅ 250 produits simulés exportés dans {csv_path}")
+    # 1. Scraper depuis Google Shopping
+    scraper = ProductScraper(query="jeu de console")
+    scraper.scrape_with_serpapi()
 
     # 2. Charger les données
-    df = sc.load_products_custom(csv_path)
+    df = sc.load_products_custom("data/custom_products.csv")
 
     # 3. Clustering des prix
     df = sc.price_clustering_custom(df)
@@ -32,4 +30,4 @@ if __name__ == "__main__":
     sc.plot_price_clusters_custom(df)
     sc.plot_cluster_distribution_custom(df)
 
-    print("\ Analyse terminée, fichiers crées dans le dossier data/")
+    print("\\ Analyse terminée, fichiers crée dans data/")
